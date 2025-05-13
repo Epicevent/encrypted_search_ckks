@@ -1,0 +1,5 @@
+__pycache__/
+*.py[cod]
+.env
+*.csv
+encrypted_search_times.csv

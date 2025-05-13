@@ -1,0 +1,7 @@
+sentence-transformers
+tenseal
+numpy
+cryptography
+pandas
+scikit-learn
+tqdm

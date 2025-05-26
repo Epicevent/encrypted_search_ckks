@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.env
+*.csv
+encrypted_search_times.csv
+*.db
+*.sqlite
+*.sqlite3
+*.db3
+*.db-journal
+*.log
+*.bin
+*.hdf5
+*.h5
+*.pkl
+*.pickle
+*.json

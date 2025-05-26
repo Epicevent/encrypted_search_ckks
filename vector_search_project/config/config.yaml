@@ -22,7 +22,15 @@ vector_db:
   collection_name: "docs"                              # ChromaDB 컬렉션 이름
   time_log: "logs/embedding_load_times.txt"            # 로딩 시간 기록 파일
   batch_size: 1000                                     # 한 번에 처리할 배치 크기
+# —— Key Management ——  
+keys:
+  base_dir: "./data/keys"            # 모든 키 파일 위치
+  fernet_key: "fernet_symmetric.key" # Fernet 대칭 키
+  ckks:
+    secret: "ckks_context.sk"        # CKKS 비밀 컨텍스트
+    public: "ckks_context.pk"    # CKKS 공개 컨텍스트
 
+    
 # —— 실험 설정 ——
 experiment:
   model: "snowflake-arctic-embed2:568m"                # 임베딩 모델

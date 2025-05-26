@@ -1,3 +1,4 @@
+
 import os
 import json
 import time
@@ -9,25 +10,39 @@ import ir_datasets
 import ollama
 
 from settings import (
-    SAMPLE_SIZE,
-    RANDOM_SEED,
-    DOCID_LIST_FILE,
-    DOC_EMBEDDINGS_FILE,
-    QUERY_EMBEDDINGS_FILE,
+    SAMPLE_SIZES,
+    DATASET_NAME,
     MODEL,
-    MAX_WORKERS
+    MAX_WORKERS,
+    get_embedding_path,
+    get_query_path,
+    get_docid_path
 )
 
+
 def run_precompute_all(
-    dataset_name: str = "miracl/en/dev",
-    sample_size: int = SAMPLE_SIZE,
-    random_seed: int = RANDOM_SEED,
-    docid_list_file: str = DOCID_LIST_FILE,
-    doc_embeddings_file: str = DOC_EMBEDDINGS_FILE,
-    query_embeddings_file: str = QUERY_EMBEDDINGS_FILE,
-    model: str = MODEL,
-    max_workers: int = MAX_WORKERS
+    sample_size: int,
+    dataset_name: str = DATASET_NAME,
+    random_seed: int = None,
+    docid_list_file: str = None,
+    doc_embeddings_file: str = None,
+    query_embeddings_file: str = None,
+    model: str = None,
+    max_workers: int = None
 ):
+    """
+    주어진 sample_size와 dataset_name에 따라 문서 및 쿼리 임베딩을 수행하고 파일로 저장합니다.
+    """
+    # 기본 설정
+    random_seed = random_seed or random_seed
+    model = model or MODEL
+    max_workers = max_workers or MAX_WORKERS
+
+    # 파일 경로 동적 생성
+    docid_list_file = docid_list_file or get_docid_path(sample_size)
+    doc_embeddings_file = doc_embeddings_file or get_embedding_path(sample_size)
+    query_embeddings_file = query_embeddings_file or get_query_path(sample_size)
+
     ds = ir_datasets.load(dataset_name)
 
     # 1) Sample IDs
@@ -68,10 +83,10 @@ def run_precompute_all(
         t0 = time.perf_counter()
         emb = ollama.embeddings(model=model, prompt=text)["embedding"]
         return {
-            "doc_id":      doc.doc_id,
-            "content":     text,
-            "embedding":   emb,
-            "embed_time":  time.perf_counter() - t0
+            "doc_id": doc.doc_id,
+            "content": text,
+            "embedding": emb,
+            "embed_time": time.perf_counter() - t0
         }
 
     print(f"[3] Embedding {len(to_embed)} docs with {workers} workers…")
@@ -98,9 +113,9 @@ def run_precompute_all(
         t0 = time.perf_counter()
         emb = ollama.embeddings(model=model, prompt=q.text)["embedding"]
         return {
-            "query_id":   q.query_id,
-            "text":       q.text,
-            "embedding":  emb,
+            "query_id": q.query_id,
+            "text": q.text,
+            "embedding": emb,
             "embed_time": time.perf_counter() - t0
         }
 
@@ -120,25 +135,12 @@ def run_precompute_all(
         json.dump(query_records, f, ensure_ascii=False, indent=2)
     print(f"[6] Saved {len(query_records)} query embeddings → {query_embeddings_file}")
 
-def main():
+
+if __name__ == "__main__":
     # 반복할 샘플 사이즈
-    sample_sizes = [10_000, 50_000, 100_000]
-
-    for size in sample_sizes:
-        # 파일명 뒤에 `_SIZE` 접미사 붙이기
-        docid_file = DOCID_LIST_FILE.replace(".json", f"_{size}.json")
-        docemb_file = DOC_EMBEDDINGS_FILE.replace(".json", f"_{size}.json")
-        qryemb_file = QUERY_EMBEDDINGS_FILE.replace(".json", f"_{size}.json")
-
+    for size in SAMPLE_SIZES:
         print(f"\n=== run_precompute_all(sample_size={size}) ===")
         run_precompute_all(
             sample_size=size,
-            docid_list_file=docid_file,
-            doc_embeddings_file=docemb_file,
-            query_embeddings_file=qryemb_file,
-            model=MODEL,
-            max_workers=1
+            dataset_name=DATASET_NAME
         )
-
-if __name__ == "__main__":
-    main()

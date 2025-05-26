@@ -1,0 +1,43 @@
+# config/config.yaml
+
+# —— 공통 설정 ——
+random_seed: 42
+
+# —— Input Embedding JSON per Sample Size ——
+input:
+  base_dir: "./data"                                   # JSON 파일이 있는 상위 폴더
+  dataset_name: "miracl/en/dev"                        # 데이터셋 이름 (MIRACL)
+  embedding_dir: "embeddings"                          # 임베딩 JSON만 모아둔 서브폴더
+  embedding_file_pattern: "doc_embeddings_{size}.json" # {size}에 샘플 크기 삽입
+  sample_sizes: [10000, 50000, 100000]                 # 사용할 샘플 사이즈 리스트
+
+# —— Vector DB 설정 ——
+vector_db:
+  encrypted:
+    base_dir: "./data/encrypted_dbs"                   # 암호화 DB들의 부모 디렉터리
+    db_dir_pattern: "chroma_db_{size}"                  # {size}에 샘플 크기 삽입
+  plain:
+    base_dir: "./data/plain_dbs"                       # 평문 DB들의 부모 디렉터리
+    db_dir_pattern: "chroma_db_{size}"
+  collection_name: "docs"                              # ChromaDB 컬렉션 이름
+  time_log: "logs/embedding_load_times.txt"            # 로딩 시간 기록 파일
+  batch_size: 1000                                     # 한 번에 처리할 배치 크기
+
+# —— 실험 설정 ——
+experiment:
+  model: "snowflake-arctic-embed2:568m"                # 임베딩 모델
+  max_workers: 1                                       # 병렬 워커 수 (None→os.cpu_count())
+  n_results: 5                                         # 검색 결과 개수
+  query_num: 50                                        # 평가할 쿼리 수 (None→전체)
+
+# —— CKKS 파라미터 ——
+ckks_params:
+  poly_mod_degree: 8192                                # 다항식 차수
+  coeff_mod_bit_sizes: [60, 40, 40, 60]                # 계수 모듈 비트 사이즈 리스트
+  global_scale: 1099511627776                          # 2**40
+
+# —— 출력 설정 ——
+output:
+  results_dir: "./results"                             # 결과 파일 저장 디렉터리
+  eval_results_pattern: "eval_results_{size}.json"     # {size}에 샘플 크기 삽입
+  metrics_pattern: "metrics_{size}.json"

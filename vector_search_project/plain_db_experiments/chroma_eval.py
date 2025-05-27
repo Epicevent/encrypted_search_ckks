@@ -1,22 +1,25 @@
+# chroma_eval.py — Evaluate ChromaDB using settings.py
+
 import os
 import json
 import time
 import chromadb
 from chromadb.config import Settings
-
 from settings import (
-    QUERY_EMBEDDINGS_FILE,
+    SAMPLE_SIZES,
     N_RESULTS,
-    QUERY_NUM
+    QUERY_NUM,
+    get_query_embeddings_path,
+    get_eval_path,
+    get_metrics_path,
+    get_docid_list_path,
+    get_plain_db_dir,
 )
 
-SIZES = [10000, 50000, 100000]
-BASE_DB_PREFIX = "chroma_db_"
 COLL_NAME = "docs"
-RESULTS_DIR = "results"
 
-def evaluate_queries(collection, embeddings_file, n_results, limit=None):
-    with open(embeddings_file, "r", encoding="utf-8") as f:
+def evaluate_queries(collection, query_embeddings_file, n_results, limit=None):
+    with open(query_embeddings_file, "r", encoding="utf-8") as f:
         queries = json.load(f)
     if limit:
         queries = queries[:limit]
@@ -46,30 +49,30 @@ def dump_docids(collection, out_path):
         json.dump(docs, f, ensure_ascii=False, indent=2)
 
 def main():
-    for size in SIZES:
-        db_path = f"{BASE_DB_PREFIX}{size}"
+    for size in SAMPLE_SIZES:
+        db_path = get_plain_db_dir(size)
         print(f"\n▶ 크기 {size} 평가 시작 (DB: {db_path})")
 
         client = chromadb.PersistentClient(path=db_path, settings=Settings())
         collection = client.get_collection(name=COLL_NAME)
 
-        # 평가
         results, t = evaluate_queries(
             collection=collection,
-            embeddings_file=QUERY_EMBEDDINGS_FILE,
+            query_embeddings_file=get_query_embeddings_path(size),
             n_results=N_RESULTS,
             limit=QUERY_NUM
         )
 
-        # 파일 경로 설정
-        os.makedirs(RESULTS_DIR, exist_ok=True)
-        with open(os.path.join(RESULTS_DIR, f"eval_results_{size}.json"), "w", encoding="utf-8") as f:
+        # 평가 결과 저장
+        os.makedirs(os.path.dirname(get_eval_path(size)), exist_ok=True)
+
+        with open(get_eval_path(size), "w", encoding="utf-8") as f:
             json.dump(results, f, ensure_ascii=False, indent=2)
 
-        with open(os.path.join(RESULTS_DIR, f"metrics_{size}.json"), "w", encoding="utf-8") as f:
+        with open(get_metrics_path(size), "w", encoding="utf-8") as f:
             json.dump({"eval_time_sec": round(t, 4)}, f, indent=2)
 
-        dump_docids(collection, os.path.join(RESULTS_DIR, f"docid_list_{size}.json"))
+        dump_docids(collection, get_docid_list_path(size))
 
         print(f"✅ {size} 완료: {t:.2f}초")
 

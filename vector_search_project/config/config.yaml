@@ -15,7 +15,7 @@ input:
 vector_db:
   encrypted:
     base_dir: "./data/encrypted_dbs"                   # 암호화 DB들의 부모 디렉터리
-    db_dir_pattern: "chroma_db_{size}"                  # {size}에 샘플 크기 삽입
+    db_dir_pattern: "he_db_{size}"                  # {size}에 샘플 크기 삽입
   plain:
     base_dir: "./data/plain_dbs"                       # 평문 DB들의 부모 디렉터리
     db_dir_pattern: "chroma_db_{size}"
@@ -30,13 +30,13 @@ keys:
     secret: "ckks_context.sk"        # CKKS 비밀 컨텍스트
     public: "ckks_context.pk"    # CKKS 공개 컨텍스트
 
-    
+
 # —— 실험 설정 ——
 experiment:
   model: "snowflake-arctic-embed2:568m"                # 임베딩 모델
   max_workers: 1                                       # 병렬 워커 수 (None→os.cpu_count())
   n_results: 5                                         # 검색 결과 개수
-  query_num: 50                                        # 평가할 쿼리 수 (None→전체)
+  query_num: 1                                        # 평가할 쿼리 수 (None→전체)
 
 # —— CKKS 파라미터 ——
 ckks_params:

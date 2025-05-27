@@ -42,6 +42,12 @@ def evaluate_queries(
         queries = queries[:limit]
     embeddings = [q["embedding"] for q in queries]
     query_ids = [q["query_id"] for q in queries]
+    if not embeddings:
+        print("No embeddings found in the file.")
+        return []
+    if len(embeddings) != len(query_ids):
+        raise ValueError("Mismatch between number of embeddings and query IDs.")
+    print(f"Loaded {len(embeddings)} query embeddings from {embeddings_file}")
 
     start = time.perf_counter()
     all_hits = store.query(

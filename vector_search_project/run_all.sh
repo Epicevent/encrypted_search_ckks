@@ -12,7 +12,7 @@ python plain_db_experiments/chroma.py
 
 # 3. Plain DB experiment: evaluation
 echo "[3/5] Plain DB experiment: evaluation"
-python plain_db_experiments/chorma_eval.py
+python plain_db_experiments/chroma_eval.py
 
 # 4. HE DB experiment: build encrypted DB
 echo "[4/5] HE DB experiment: build encrypted DB"

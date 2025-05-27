@@ -1,23 +1,28 @@
+# chroma.py — Create Chroma DB using settings.py
+
 import os
 import json
 import time
 import chromadb
 from chromadb.config import Settings
+from settings import (
+    SAMPLE_SIZES,
+    get_doc_embeddings_path,
+    get_plain_db_dir,
+)
 
 # ── 설정 ─────────────────────────────
-DATA_DIR   = "data"
-SIZES      = [10000, 50000, 100000]
-TIME_LOG   = "embedding_load_times.txt"
 COLL_NAME  = "docs"
-BATCH_SIZE = 1000  # 안전한 배치 크기
+BATCH_SIZE = 1000
+TIME_LOG   = "embedding_load_times.txt"
 
 # ── 시간 로그 초기화 ─────────────────
 with open(TIME_LOG, "w", encoding="utf-8") as f:
     f.write("=== Embedding Load Times ===\n")
 
-# ── 각 크기별로 독립 DB 처리 ────────
-for size in SIZES:
-    db_path = f"chroma_db_{size}"
+# ── 각 크기별로 DB 생성 ──────────────
+for size in SAMPLE_SIZES:
+    db_path = get_plain_db_dir(size)
     os.makedirs(db_path, exist_ok=True)
 
     client = chromadb.PersistentClient(path=db_path, settings=Settings())
@@ -27,7 +32,7 @@ for size in SIZES:
     except Exception:
         collection = client.create_collection(name=COLL_NAME)
 
-    embedding_file = os.path.join(DATA_DIR, f"doc_embeddings_{size}.json")
+    embedding_file = get_doc_embeddings_path(size)
 
     start = time.time()
     with open(embedding_file, "r", encoding="utf-8") as f:

@@ -22,8 +22,6 @@ class HEVectorStore:
             raise ValueError(f"Valid context_path required, got: {context_path}")
         if not db_path or not os.path.exists(os.path.dirname(db_path)):
             raise ValueError(f"Valid db_path required, got: {db_path}")
-        if id_key_path and not os.path.exists(os.path.dirname(id_key_path)):    
-            raise ValueError(f"Valid id_key_path required, got: {id_key_path}")
         with open(context_path, "rb") as f:
             ctx_bytes = f.read()
         self.context = ts.context_from(ctx_bytes)

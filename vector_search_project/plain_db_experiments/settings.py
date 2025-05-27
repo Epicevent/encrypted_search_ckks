@@ -22,14 +22,6 @@ PROJECT_ROOT = root
 with open(PROJECT_ROOT / "config" / "config.yaml", "r", encoding="utf-8") as f:
     cfg = yaml.safe_load(f)
 
-# 3) Database & Key files
-db_cfg = cfg.get("database", {})
-DB_PATH = str(PROJECT_ROOT / db_cfg.get("db_path", "data/vectors.db"))
-FERNET_KEY_PATH = str(PROJECT_ROOT / db_cfg.get("fernet_key_path", "data/fernet_symmetric.key"))
-context_cfg = db_cfg.get("ckks", {})
-CONTEXT_SECRET = str(PROJECT_ROOT / context_cfg.get("secret", "data/ckks_context.sk"))
-CONTEXT_PUBLIC = str(PROJECT_ROOT / context_cfg.get("public", "data/ckks_context.pk"))
-
 # 4) Experiment parameters
 exp_cfg = cfg.get("experiment", {})
 MODEL = exp_cfg.get("model")
@@ -37,11 +29,8 @@ MAX_WORKERS = exp_cfg.get("max_workers")
 N_RESULTS = exp_cfg.get("n_results")
 QUERY_NUM = exp_cfg.get("query_num")
 
-# 5) CKKS parameters (if needed)
-ckks_cfg = cfg.get("ckks_params", {})
-POLY_MOD_DEGREE = ckks_cfg.get("poly_mod_degree")
-COEFF_MOD_BIT_SIZES = ckks_cfg.get("coeff_mod_bit_sizes")
-GLOBAL_SCALE = ckks_cfg.get("global_scale")
+input_cfg = cfg.get("input", {})
+SAMPLE_SIZES = input_cfg.get("sample_sizes", [])
 
 # 6) Input embedding file patterns (if reused)
 input_cfg = cfg.get("input", {})

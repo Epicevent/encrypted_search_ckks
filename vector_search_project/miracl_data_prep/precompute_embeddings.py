@@ -76,27 +76,32 @@ def run_precompute_all(
     workers = max_workers or (os.cpu_count() or 4)
     doc_records = []
 
-    def embed_doc(doc):
-        text = f"{doc.title or ''}\n{doc.text or ''}"
-        t0 = time.perf_counter()
-        emb = ollama.embeddings(model=model, prompt=text)["embedding"]
-        return {
-            "doc_id": doc.doc_id,
-            "content": text,
-            "embedding": emb,
-            "embed_time": time.perf_counter() - t0
-        }
-
-
-
 
     doc_records = []
     print(f"[2] Embedding {len(needed)} docs sequentially…")
 
-    for i, doc in enumerate(tqdm(ds.docs_store().get_many_iter(needed), total=len(needed), desc="Embedding docs", unit="doc")):
-        rec = embed_doc(doc)
-        doc_records.append(rec)
-        tqdm.write(f"{i} docs embedded so far...")
+    found = 0
+    print(f"🔍 임베딩 대상 문서 수: {len(needed):,}")
+
+    for doc in tqdm(ds.docs_iter(), desc="Embedding filtered docs", total=DOC_TOTAL, unit="doc"):
+        if doc.doc_id in needed:
+            # 실제 임베딩 수행
+            text = f"{doc.title or ''}\n{doc.text or ''}"
+            t0 = time.perf_counter()
+            emb = ollama.embeddings(model=model, prompt=text)["embedding"]
+            rec = {
+                "doc_id": doc.doc_id,
+                "content": text,
+                "embedding": emb,
+                "embed_time": time.perf_counter() - t0
+            }
+            doc_records.append(rec)
+            found += 1
+
+            # 필요한 수만큼 다 찾았으면 중단
+            if found == len(needed):
+                break
+
 
 
     # 3) Save document embeddings

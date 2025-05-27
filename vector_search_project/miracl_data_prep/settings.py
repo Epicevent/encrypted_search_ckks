@@ -35,7 +35,9 @@ DATASET_NAME = input_cfg.get("dataset_name")
 SAMPLE_SIZES = input_cfg.get("sample_sizes", [])
 BASE_DATA_DIR = PROJECT_ROOT / input_cfg.get("base_dir", "data")
 EMBEDDING_SUBDIR = input_cfg.get("embedding_dir", "embeddings")
-EMB_DIR = BASE_DATA_DIR / EMBEDDING_SUBDIR / DATASET_NAME
+EMB_DIR = BASE_DATA_DIR / DATASET_NAME / EMBEDDING_SUBDIR # e.g., data/dataset_name/embeddings
+
+
 EMB_FILE_PATTERN = input_cfg.get("embedding_file_pattern", "doc_embeddings_{size}.json")
 DOCID_PATTERN = input_cfg.get("docid_pattern", "docid_list_{size}.json")
 
@@ -63,8 +65,7 @@ def get_embedding_path(size: int) -> str:
 def get_query_path(size: int) -> str:
     return str(EMB_DIR / EMB_FILE_PATTERN.replace("doc_", "query_").format(size=size))
 
-def get_docid_path(size: int) -> str:
-    return str(EMB_DIR / DOCID_PATTERN.format(size=size))
+
 
 def get_enc_db_dir(size: int) -> str:
     return str(ENC_BASE / ENC_PATTERN.format(size=size))

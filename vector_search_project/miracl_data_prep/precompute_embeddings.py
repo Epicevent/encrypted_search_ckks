@@ -15,8 +15,7 @@ from settings import (
     MODEL,
     MAX_WORKERS,
     get_embedding_path,
-    get_query_path,
-    get_docid_path
+    get_query_path
 )
 
 
@@ -39,42 +38,41 @@ def run_precompute_all(
     max_workers = max_workers or MAX_WORKERS
 
     # 파일 경로 동적 생성
-    docid_list_file = docid_list_file or get_docid_path(sample_size)
+ 
     doc_embeddings_file = doc_embeddings_file or get_embedding_path(sample_size)
     query_embeddings_file = query_embeddings_file or get_query_path(sample_size)
 
     ds = ir_datasets.load(dataset_name)
 
-    # 1) Sample IDs
     random.seed(random_seed)
-    relevant = {q.doc_id for q in ds.qrels_iter()}
-    all_ids = [d.doc_id for d in ds.docs_iter()]
+
+
+    # ▶️ 빠른 count API 활용
+    DOC_TOTAL   = ds.docs_count()
+    QRELS_TOTAL = ds.qrels_count()
+
+    print(f"✅ Total documents: {DOC_TOTAL:,}")
+    print(f"✅ Total qrels: {QRELS_TOTAL:,}")
+
+    # 1. qrels 로딩
+    qrels_list = list(ds.qrels_iter())
+    relevant = {q.doc_id for q in tqdm(qrels_list, desc="Loading qrels", total=QRELS_TOTAL)}
+
+    # 2. 전체 문서 ID 수집 (조금 느릴 수 있음 → tqdm으로)
+    all_ids = [d.doc_id for d in tqdm(ds.docs_iter(), desc="Collecting all doc IDs", total=DOC_TOTAL)]
+
+    # 3. relevant 필터링
     relevant &= set(all_ids)
     if len(relevant) > sample_size:
         raise ValueError("sample_size smaller than number of relevant docs")
+
     negatives = random.sample(list(set(all_ids) - relevant), k=sample_size - len(relevant))
     doc_ids = sorted(relevant) + negatives
 
-    os.makedirs(os.path.dirname(docid_list_file), exist_ok=True)
-    with open(docid_list_file, "w", encoding="utf-8") as f:
-        json.dump(doc_ids, f, ensure_ascii=False, indent=2)
-    print(f"[1] Saved {len(doc_ids)} IDs → {docid_list_file}")
-
-    # 2) One-pass: collect needed docs
+    # 4. 바로 문서 임베딩 (메모리에 올리지 않음)
     needed = set(doc_ids)
-    to_embed = []
-    for doc in ds.docs_iter():
-        if doc.doc_id in needed:
-            to_embed.append(doc)
-            if len(to_embed) == len(needed):
-                break
+    print(f"📦 Embedding {len(needed)} documents via docs_store().get_many_iter()...")
 
-    missing = needed - {d.doc_id for d in to_embed}
-    if missing:
-        raise RuntimeError(f"Missing docs: {missing}")
-    print(f"[2] Loaded {len(to_embed)} docs for embedding")
-
-    # 3) Embed Documents with tqdm
     workers = max_workers or (os.cpu_count() or 4)
     doc_records = []
 
@@ -89,23 +87,29 @@ def run_precompute_all(
             "embed_time": time.perf_counter() - t0
         }
 
-    print(f"[3] Embedding {len(to_embed)} docs with {workers} workers…")
-    with ThreadPoolExecutor(max_workers=workers) as ex:
-        futures = {ex.submit(embed_doc, d): d.doc_id for d in to_embed}
-        for fut in tqdm(as_completed(futures),
-                        total=len(futures),
-                        desc="Docs → embed",
-                        unit="doc"):
-            rec = fut.result()
-            doc_records.append(rec)
+    print(f"[2] Embedding {len(needed)} docs …")
+    docs = list(ds.docs_store().get_many_iter(needed))  # 미리 리스트로 변환
 
-    # 4) Save document embeddings
+    doc_records = []
+    print(f"[2] Embedding {len(docs)} docs sequentially…")
+
+    for i, doc in enumerate(docs, 1):
+        rec = embed_doc(doc)
+        doc_records.append(rec)
+
+        # 매 10개마다 한 번씩 출력 (원하면 1개마다도 가능)
+        if i % 10 == 0 or i == len(docs):
+            tqdm.write(f"✅ Embedded {i}/{len(docs)} documents")
+
+
+
+    # 3) Save document embeddings
     os.makedirs(os.path.dirname(doc_embeddings_file), exist_ok=True)
     with open(doc_embeddings_file, "w", encoding="utf-8") as f:
         json.dump(doc_records, f, ensure_ascii=False, indent=2)
-    print(f"[4] Saved {len(doc_records)} doc embeddings → {doc_embeddings_file}")
+    print(f"[3] Saved {len(doc_records)} doc embeddings → {doc_embeddings_file}")
 
-    # 5) Embed Queries with tqdm
+    # 4) Embed Queries with tqdm
     queries = list(ds.queries_iter())
     query_records = []
 
@@ -119,7 +123,7 @@ def run_precompute_all(
             "embed_time": time.perf_counter() - t0
         }
 
-    print(f"[5] Embedding {len(queries)} queries…")
+    print(f"[4] Embedding {len(queries)} queries…")
     with ThreadPoolExecutor(max_workers=workers) as ex:
         futures = {ex.submit(embed_query, q): q.query_id for q in queries}
         for fut in tqdm(as_completed(futures),
@@ -133,7 +137,7 @@ def run_precompute_all(
     os.makedirs(os.path.dirname(query_embeddings_file), exist_ok=True)
     with open(query_embeddings_file, "w", encoding="utf-8") as f:
         json.dump(query_records, f, ensure_ascii=False, indent=2)
-    print(f"[6] Saved {len(query_records)} query embeddings → {query_embeddings_file}")
+    print(f"[5] Saved {len(query_records)} query embeddings → {query_embeddings_file}")
 
 
 if __name__ == "__main__":

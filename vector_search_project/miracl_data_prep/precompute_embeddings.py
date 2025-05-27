@@ -88,19 +88,15 @@ def run_precompute_all(
         }
 
 
-    docs = list(ds.docs_store().get_many_iter(needed))  # 미리 리스트로 변환
+
 
     doc_records = []
-    print(f"[2] Embedding {len(docs)} docs sequentially…")
+    print(f"[2] Embedding {len(needed)} docs sequentially…")
 
-    for i, doc in enumerate(docs, 1):
+    for i, doc in enumerate(tqdm(ds.docs_store().get_many_iter(needed), total=len(needed), desc="Embedding docs", unit="doc")):
         rec = embed_doc(doc)
         doc_records.append(rec)
-
-        # 매 10개마다 한 번씩 출력 (원하면 1개마다도 가능)
-        if i % 10 == 0 or i == len(docs):
-            tqdm.write(f"✅ Embedded {i}/{len(docs)} documents")
-
+        tqdm.write(f"{i} docs embedded so far...")
 
 
     # 3) Save document embeddings

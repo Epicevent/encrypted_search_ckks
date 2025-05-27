@@ -71,7 +71,7 @@ def run_precompute_all(
 
     # 4. 바로 문서 임베딩 (메모리에 올리지 않음)
     needed = set(doc_ids)
-    print(f"📦 Embedding {len(needed)} documents via docs_store().get_many_iter()...")
+    print(f"[2]📦 Embedding {len(needed)} documents via docs_store().get_many_iter()...")
 
     workers = max_workers or (os.cpu_count() or 4)
     doc_records = []
@@ -87,7 +87,7 @@ def run_precompute_all(
             "embed_time": time.perf_counter() - t0
         }
 
-    print(f"[2] Embedding {len(needed)} docs …")
+
     docs = list(ds.docs_store().get_many_iter(needed))  # 미리 리스트로 변환
 
     doc_records = []

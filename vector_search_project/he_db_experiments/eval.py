@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 import os
 import json
@@ -6,15 +5,14 @@ import time
 import sqlite3
 from tqdm import tqdm
 from cryptography.fernet import Fernet
-import pandas as pd
 from he_vector_db.store import HEVectorStore
 
 from settings import (
     SAMPLE_SIZES,
-    get_query_path,
-    get_enc_db_dir,
+    get_query_embeddings_path,
+    get_he_db_path,
     get_eval_path,
-    get_docid_path,
+    get_docid_list_path,
     get_metrics_path,
     FERNET_KEY_PATH,
     CONTEXT_SECRET,
@@ -40,6 +38,7 @@ def evaluate_queries(
         queries = json.load(f)
     if limit is not None:
         queries = queries[:limit]
+
     embeddings = [q["embedding"] for q in queries]
     query_ids = [q["query_id"] for q in queries]
     if not embeddings:
@@ -47,6 +46,7 @@ def evaluate_queries(
         return []
     if len(embeddings) != len(query_ids):
         raise ValueError("Mismatch between number of embeddings and query IDs.")
+
     print(f"Loaded {len(embeddings)} query embeddings from {embeddings_file}")
 
     start = time.perf_counter()
@@ -68,6 +68,7 @@ def evaluate_queries(
                 doc_id = enc_id.decode() if hasattr(enc_id, 'decode') else str(enc_id)
             hit_list.append({"rank": rank, "doc_id": doc_id, "score": score})
         results.append({"query_id": qid, "results": hit_list})
+
     return results
 
 
@@ -108,8 +109,9 @@ def main():
     # Loop over each sample size
     for size in SAMPLE_SIZES:
         print(f"\n=== Evaluating sample_size={size} ===")
-        db_dir = get_enc_db_dir(size)
-        db_path = os.path.join(db_dir, "vectors.db")
+
+        # HE DB 경로 가져오기
+        db_path = get_he_db_path(size)
         store = HEVectorStore(
             context_path=CONTEXT_SECRET,
             db_path=db_path,
@@ -117,7 +119,7 @@ def main():
         )
 
         # Perform query evaluation
-        query_file = get_query_path(size)
+        query_file = get_query_embeddings_path(size)
         eval_results = evaluate_queries(
             embeddings_file=query_file,
             store=store,
@@ -135,7 +137,8 @@ def main():
                 metrics = json.load(f)
         else:
             metrics = {}
-        metrics["eval_time_sec"] = round(time.time() - time.time(), 4)
+        # 여기서는 wall_time이나 별도 측정값을 넣으셔도 좋습니다.
+        metrics["last_run_at"] = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime())
         with open(metrics_file, "w", encoding="utf-8") as f:
             json.dump(metrics, f, ensure_ascii=False, indent=2)
 
@@ -147,7 +150,7 @@ def main():
         print(f"Results saved to {eval_file}")
 
         # Dump all doc IDs
-        docid_out = get_docid_path(size)
+        docid_out = get_docid_list_path(size)
         dump_all_docids(
             db_path=db_path,
             fernet=fernet,
@@ -156,6 +159,6 @@ def main():
 
         store.close()
 
+
 if __name__ == "__main__":
     main()
-

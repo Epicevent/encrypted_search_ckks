@@ -45,7 +45,8 @@ HE_DB_PATTERN = he_cfg.get("db_dir_pattern", "regulation_vectors_{size}.db")
 # 6) CKKS context & key paths
 key_cfg = cfg.get("keys", {})
 KEY_BASE = PROJECT_ROOT / key_cfg.get("base_dir", "data/keys")
-FERNET_KEY_PATH = str(PROJECT_ROOT / KEY_BASE/ key_cfg.get("fernet_key_path", "data/fernet_symmetric.key"))
+
+FERNET_KEY_PATH = str(PROJECT_ROOT / KEY_BASE/ key_cfg.get("fernet_key", "data/fernet_symmetric.key"))
 context_cfg = key_cfg .get("ckks", {})
 CONTEXT_SECRET = str(PROJECT_ROOT / KEY_BASE/ context_cfg.get("secret", "data/ckks_context.sk"))
 CONTEXT_PUBLIC = str(PROJECT_ROOT / KEY_BASE/ context_cfg.get("public", "data/ckks_context.pk"))

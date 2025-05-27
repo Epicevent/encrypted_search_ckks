@@ -25,7 +25,16 @@ for size in SAMPLE_SIZES:
     db_path = get_plain_db_dir(size)
     os.makedirs(db_path, exist_ok=True)
 
-    client = chromadb.PersistentClient(path=db_path, settings=Settings())
+    client = chromadb.PersistentClient(
+        path=db_path,
+        settings=Settings(
+            chroma_db_impl="duckdb+parquet",   # 필요시 명시
+            persist_directory=db_path,         # 필요시 명시
+            anonymized_telemetry=False,        # 필요시 명시
+            embedding_distance_metric="cosine" # ← 여기만 추가
+        )
+    )
+
 
     try:
         collection = client.get_collection(name=COLL_NAME)

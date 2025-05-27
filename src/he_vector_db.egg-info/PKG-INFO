@@ -1,0 +1,12 @@
+Metadata-Version: 2.1
+Name: he_vector_db
+Version: 0.1.1
+Summary: Homomorphic Encryption backed Vector Store
+Author: Your Name
+Requires-Dist: sentence-transformers
+Requires-Dist: tenseal
+Requires-Dist: numpy
+Requires-Dist: cryptography
+Requires-Dist: pandas
+Requires-Dist: scikit-learn
+Requires-Dist: tqdm

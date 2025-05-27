@@ -49,6 +49,8 @@ def ingest_documents(
     print(f"🔐 Initializing HEVectorStore @ {db_path}")
     store = HEVectorStore(db_path=db_path, context_path=context_path, id_key_path=fernet_key_path)
 
+
+
     if store.count() > 0:
         print("📦 Existing embeddings found. Skipping ingestion.")
         store.close()

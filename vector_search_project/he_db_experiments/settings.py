@@ -33,13 +33,13 @@ input_cfg = cfg.get("input", {})
 SAMPLE_SIZES = input_cfg.get("sample_sizes", [])
 
 # 4) Input embedding file paths
-BASE_EMB_DIR = PROJECT_ROOT / input_cfg.get("base_dir", "data") / input_cfg.get("embedding_dir", "embeddings") / input_cfg.get("dataset_name", "")
+BASE_EMB_DIR = PROJECT_ROOT / input_cfg.get("base_dir", "data")  / input_cfg.get("dataset_name", "") / input_cfg.get("embedding_dir", "embeddings")
 EMB_FILE_PATTERN = input_cfg.get("embedding_file_pattern", "doc_embeddings_{size}.json")
 DOCID_PATTERN = input_cfg.get("docid_pattern", "docid_list_{size}.json")
 
 # 5) HE Vector DB settings
 he_cfg = cfg.get("vector_db", {}).get("encrypted", {})
-HE_DB_BASE = PROJECT_ROOT / he_cfg.get("base_dir", "data/he_dbs")
+HE_DB_BASE = PROJECT_ROOT / input_cfg.get("dataset_name", "") /  he_cfg.get("base_dir", "data/he_dbs")
 HE_DB_PATTERN = he_cfg.get("db_dir_pattern", "regulation_vectors_{size}.db")
 
 # 6) CKKS context & key paths

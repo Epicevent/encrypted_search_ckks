@@ -37,11 +37,21 @@ class HEVectorStore:
         self.id_key = id_key
         self.fernet = Fernet(self.id_key)
         
+        # 4) DB 경로 설정
+        if not db_path.endswith('.db'):
+            # db_path가 폴더 경로일 경우 → 내부에 기본 파일명 붙이기
+            self.db_path = os.path.join(db_path, "he_vector_store.db")
+        else:
+            # db_path가 정확한 파일 경로일 경우 → 그대로 사용
+            self.db_path = db_path
 
-        self.db_path = db_path
-        os.makedirs(os.path.dirname(db_path), exist_ok=True)
-        self.conn = sqlite3.connect(db_path)
-        self.conn = sqlite3.connect(db_path, check_same_thread=False)
+        
+        print(f"[INIT] HEVectorStore @ {self.db_path}")
+
+        # ✅ DB 파일 경로의 상위 디렉터리 생성
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        self.conn = sqlite3.connect(self.db_path)
+        self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
         self._init_db()
 
     def load_or_create_fernet_key(self,key_path: str) -> bytes:

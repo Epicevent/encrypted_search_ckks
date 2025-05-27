@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='he_vector_db',
-    version='0.1.0',
+    version='0.1.1',
     description='Homomorphic Encryption backed Vector Store',
     author='Your Name',
     packages=find_packages(where='src'),

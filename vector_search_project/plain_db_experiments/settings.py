@@ -34,13 +34,13 @@ SAMPLE_SIZES = input_cfg.get("sample_sizes", [])
 
 # 6) Input embedding file patterns (if reused)
 input_cfg = cfg.get("input", {})
-BASE_EMB_DIR = PROJECT_ROOT / input_cfg.get("base_dir", "data") / input_cfg.get("embedding_dir", "embeddings") / input_cfg.get("dataset_name", "")
+BASE_EMB_DIR = PROJECT_ROOT / input_cfg.get("base_dir", "data") / input_cfg.get("dataset_name", "") / input_cfg.get("embedding_dir", "embeddings") 
 EMB_FILE_PATTERN = input_cfg.get("embedding_file_pattern", "doc_embeddings_{size}.json")
 DOCID_PATTERN = input_cfg.get("docid_pattern", "docid_list_{size}.json")
 
 # 7) Plain Vector DB settings
 plain_cfg = cfg.get("vector_db", {}).get("plain", {})
-PLAIN_DB_BASE = PROJECT_ROOT / plain_cfg.get("base_dir", "data/plain_dbs")
+PLAIN_DB_BASE = PROJECT_ROOT  / input_cfg.get("dataset_name", "") / plain_cfg.get("base_dir", "data/plain_dbs")
 PLAIN_DB_PATTERN = plain_cfg.get("db_dir_pattern", "chroma_db_{size}")
 
 # 8) Output files

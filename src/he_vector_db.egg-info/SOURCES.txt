@@ -1,0 +1,7 @@
+README.md
+setup.py
+src/he_vector_db.egg-info/PKG-INFO
+src/he_vector_db.egg-info/SOURCES.txt
+src/he_vector_db.egg-info/dependency_links.txt
+src/he_vector_db.egg-info/requires.txt
+src/he_vector_db.egg-info/top_level.txt

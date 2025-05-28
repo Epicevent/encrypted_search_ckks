@@ -6,7 +6,7 @@ import sqlite3
 from tqdm import tqdm
 from cryptography.fernet import Fernet
 from he_vector_db.store import HEVectorStore
-
+from typing import List
 from settings import (
     SAMPLE_SIZES,
     get_query_embeddings_path,
@@ -73,32 +73,32 @@ def evaluate_queries(
 
 
 def dump_all_docids(
-    db_path: str,
-    fernet: Fernet,
+    store: HEVectorStore,
     out_path: str
-):
+) -> None:
     """
-    Dump and decrypt all document IDs stored in the HEVectorStore SQLite DB.
+    HEVectorStore에서 모든 암호화된 문서 ID를 가져와 복호화한 뒤 JSON으로 덤프합니다.
     """
-    conn = sqlite3.connect(db_path)
-    cur = conn.cursor()
-    cur.execute("SELECT id FROM vectors")
-    rows = cur.fetchall()
-    conn.close()
+    # 1) HEVectorStore에 저장된 암호화된 ID 조회
+    enc_ids: List[bytes] = store.get_all_ids()
 
-    doc_ids = []
-    for (enc_id,) in rows:
+    # 2) Fernet 키를 이용해 복호화
+    doc_ids: List[str] = []
+    for enc_id in enc_ids:
         try:
-            doc_id = fernet.decrypt(enc_id).decode()
+            # bytes → 복호화 → str
+            doc_id = store.fernet.decrypt(enc_id).decode()
         except Exception:
-            doc_id = enc_id.decode() if hasattr(enc_id, 'decode') else str(enc_id)
+            # 복호화에 실패하면 가능한 방식으로 디코딩
+            doc_id = enc_id.decode() if isinstance(enc_id, (bytes, bytearray)) else str(enc_id)
         doc_ids.append(doc_id)
 
+    # 3) 디렉터리 생성 및 파일 쓰기
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(doc_ids, f, ensure_ascii=False, indent=2)
-    print(f"Saved {len(doc_ids)} doc ids to {out_path}")
 
+    print(f"[DUMP] Saved {len(doc_ids)} doc ids to {out_path}")
 
 def main():
     # Load Fernet key and initialize decryptor
@@ -152,8 +152,7 @@ def main():
         # Dump all doc IDs
         docid_out = get_docid_list_path(size)
         dump_all_docids(
-            db_path=db_path,
-            fernet=fernet,
+            store =store,
             out_path=docid_out
         )
 

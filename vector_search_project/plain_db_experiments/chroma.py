@@ -4,7 +4,7 @@ import os
 import json
 import time
 import chromadb
-from chromadb.config import Settings
+from chromadb.config import DEFAULT_TENANT, DEFAULT_DATABASE, Settings
 from settings import (
     SAMPLE_SIZES,
     get_doc_embeddings_path,
@@ -27,19 +27,19 @@ for size in SAMPLE_SIZES:
 
     client = chromadb.PersistentClient(
         path=db_path,
-        settings=Settings(
-            chroma_db_impl="duckdb+parquet",   # 필요시 명시
-            persist_directory=db_path,         # 필요시 명시
-            anonymized_telemetry=False,        # 필요시 명시
-            embedding_distance_metric="cosine" # ← 여기만 추가
-        )
+        settings=Settings(),
+        tenant=DEFAULT_TENANT,
+        database=DEFAULT_DATABASE,
     )
-
-
     try:
         collection = client.get_collection(name=COLL_NAME)
     except Exception:
-        collection = client.create_collection(name=COLL_NAME)
+        print(f"Creating new collection: {COLL_NAME} in {db_path}")
+        collection = client.create_collection(
+            name=COLL_NAME,
+            metadata={"hnsw:space": "cosine"}  # 거리 메트릭 지정
+        )
+
 
     embedding_file = get_doc_embeddings_path(size)
 

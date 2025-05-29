@@ -33,7 +33,7 @@ Modular Python toolkit for benchmarking CKKS-encrypted vector similarity search 
 5. **Verify installation**
 
    ```bash
-   python -c "import encrypted_search_ckks; print(encrypted_search_ckks.__version__)"
+   python -c "import he_vector_db; print(he_vector_db.__version__)"
    ```
 
 ## Citation

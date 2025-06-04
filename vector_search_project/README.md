@@ -57,23 +57,46 @@ pip install -r requirements.txt
 
 3. 나머지 설정은 이미 `config/config.yaml`에 정의되어 있으므로, 경로(path)나 파일명 등을 수정할 때는 해당 파일만 확인하면 됩니다.
 
+
 ### Full end-to-end
 
-:: Windows CMD 환경에서 실행하기 (Git Bash 또는 WSL이 설치되어 있어야 합니다)
+#### Ubuntu (Linux)
+```bash
+# 권한 설정
+chmod +x run_all.sh
+chmod +x evaluation/run_eval.sh
 
-:: 1) 권한 설정(chmod)은 Windows에서 필요 없으므로 생략합니다.
-:: 2) Git Bash가 PATH에 등록되어 있다면 아래와 같이 “bash”를 앞에 붙여 실행하세요.
+# 1) Preprocessing, DB 빌드 및 전체 파이프라인 실행
+./run_all.sh
 
-:: 1) Preprocessing, DB 빌드 및 전체 파이프라인 실행
-bash run_all.sh
+# 2) NDCG@5 평가
+./evaluation/run_eval.sh
+````
 
-:: 2) NDCG@5 평가
-bash evaluation/run_eval.sh
+#### Windows CMD (Git Bash 또는 WSL)
 
-:: 만약 WSL(Ubuntu 등)을 사용 중이라면, 
-:: “bash” 대신 “wsl”을 앞에 붙여도 됩니다:
-wsl ./run_all.sh
-wsl ./evaluation/run_eval.sh
+* Windows 자체에는 `chmod`가 필요 없으므로 생략합니다.
+
+* **Git Bash가 설치되어 있고 PATH에 등록된 경우:**
+
+  ```bash
+  # 1) Preprocessing, DB 빌드 및 전체 파이프라인 실행
+  bash run_all.sh
+
+  # 2) NDCG@5 평가
+  bash evaluation/run_eval.sh
+  ```
+
+* **WSL(Ubuntu 등)을 사용하는 경우:**
+
+  ```bash
+  # 1) Preprocessing, DB 빌드 및 전체 파이프라인 실행
+  wsl ./run_all.sh
+
+  # 2) NDCG@5 평가
+  wsl ./evaluation/run_eval.sh
+  ```
+
 
 
 ### Manual steps

@@ -59,18 +59,22 @@ pip install -r requirements.txt
 
 ### Full end-to-end
 
-Make both orchestration scripts executable and run them:
+:: Windows CMD 환경에서 실행하기 (Git Bash 또는 WSL이 설치되어 있어야 합니다)
 
-```bash
-chmod +x run_all.sh
-chmod +x evaluation/run_eval.sh
+:: 1) 권한 설정(chmod)은 Windows에서 필요 없으므로 생략합니다.
+:: 2) Git Bash가 PATH에 등록되어 있다면 아래와 같이 “bash”를 앞에 붙여 실행하세요.
 
-# 1) Preprocessing, DB builds & evaluations
-./run_all.sh
+:: 1) Preprocessing, DB 빌드 및 전체 파이프라인 실행
+bash run_all.sh
 
-# 2) NDCG@5 evaluation
-evaluation/run_eval.sh
-```
+:: 2) NDCG@5 평가
+bash evaluation/run_eval.sh
+
+:: 만약 WSL(Ubuntu 등)을 사용 중이라면, 
+:: “bash” 대신 “wsl”을 앞에 붙여도 됩니다:
+wsl ./run_all.sh
+wsl ./evaluation/run_eval.sh
+
 
 ### Manual steps
 

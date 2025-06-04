@@ -17,37 +17,44 @@ vector_search_project/
 ├── evaluation/
 │   ├── ndcg5_with_rels.py        # Compute NDCG@5 from eval JSON
 │   └── run_eval.sh               # Shell script to run NDCG evaluation
+├── requirements.txt
 ├── run_all.sh                    # Orchestrates full pipeline
 └── README.md                     # This file
 ```
 
-## Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/YourOrg/encrypted_search_ckks.git
-   cd encrypted_search_ckks
-   ```
-2. **Create & activate a virtual environment**
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate   # Linux/macOS
-   .venv\Scripts\activate     # Windows
-   ```
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. **Install in editable (development) mode**
-   ```bash
-   pip install -e .
-   ```
-5. **Verify installation**
-   ```bash
-   python -c "import encrypted_search_ckks; print(encrypted_search_ckks.__version__)"
-   ```
 
 ## Usage
+
+### installation
+
+Install dependencies from the provided `requirements.txt`:
+```bash
+pip install -r requirements.txt
+```
+
+
+
+### configuration
+
+1. `config/config.yaml` 파일을 열어 `experiment.model`에 Ollama에 존재하는 모델 이름을 지정합니다.  
+   예를 들어:
+   ```yaml
+   experiment:
+     model: "snowflake-arctic-embed2:568m"
+     ...
+````
+
+2. 지정한 모델을 로컬에 내려받으려면 터미널에서 다음을 실행합니다.
+
+   ```bash
+   ollama pull snowflake-arctic-embed2:568m
+   ```
+
+   (여기서 `"snowflake-arctic-embed2:568m"` 대신 `config.yaml`에 적어둔 모델 이름을 사용하세요.)
+
+3. 나머지 설정은 이미 `config/config.yaml`에 정의되어 있으므로, 경로(path)나 파일명 등을 수정할 때는 해당 파일만 확인하면 됩니다.
+
 
 ### Full end-to-end
 
